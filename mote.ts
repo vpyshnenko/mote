@@ -39,35 +39,50 @@ export class Mote <T>{
   }
   eval(){
     const args = this.parents.map(p => p.currentValue)
-    this.fn.apply(this, args)
+    if(this.fn){
+      this.fn.apply(this, args)
+    }
 }
 }
 
-export function map<T,R>(mote1: Mote<T>, fn: (x: T) => R ): Mote<R> {
-  const mote2 = new Mote<R>()
-  mote2.addParent(mote1)
-  mote1.addChild(mote2)
+export function map<T,R>(source: Mote<T>, fn: (x: T) => R ): Mote<R> {
+  const mote = new Mote<R>()
+  mote.addParent(source)
+  source.addChild(mote)
   const fun = function(v){
     const newVal = fn(v)
     this.push(newVal)
   }
-  mote2.addFn(fun)
-  return mote2
+  mote.addFn(fun)
+  return mote
 } 
 
-export function filter<T>(mote1: Mote<T>, fn: (x: T) => boolean ): Mote<T> {
-  const mote2 = new Mote<T>()
-  mote2.addParent(mote1)
-  mote1.addChild(mote2)
+export function filter<T>(source: Mote<T>, fn: (x: T) => boolean ): Mote<T> {
+  const mote = new Mote<T>()
+  mote.addParent(source)
+  source.addChild(mote)
   const fun = function(v){
     const res = fn(v)
     if(res){
       this.push(v)
     }
   }
-  mote2.addFn(fun)
-  return mote2
-} 
+  mote.addFn(fun)
+  return mote
+}
+
+export function reduce<T,R>(source: Mote<T>, fn: (acc: R, v:T) => R, initial: R): Mote<R> {
+  const mote = new Mote<R>()
+  mote.addParent(source)
+  source.addChild(mote)
+  const fun = function(v){
+    const acc = fn(this.currentValue, v)
+    this.push(acc)
+  }
+  mote.addFn(fun)
+  mote.push(initial)
+  return mote
+}
 
 
 
