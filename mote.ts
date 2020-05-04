@@ -39,9 +39,7 @@ export class Mote <T>{
   }
   eval(){
     const args = this.parents.map(p => p.currentValue)
-    const newValue = this.fn.apply(null, args)
-    this.setNewValue(newValue)
-    this.children.forEach(m => m.eval())
+    this.fn.apply(this, args)
 }
 }
 
@@ -49,10 +47,27 @@ export function map<T,R>(mote1: Mote<T>, fn: (x: T) => R ): Mote<R> {
   const mote2 = new Mote<R>()
   mote2.addParent(mote1)
   mote1.addChild(mote2)
-  mote2.addFn(fn)
+  const fun = function(v){
+    const newVal = fn(v)
+    this.push(newVal)
+  }
+  mote2.addFn(fun)
   return mote2
 } 
 
+export function filter<T>(mote1: Mote<T>, fn: (x: T) => boolean ): Mote<T> {
+  const mote2 = new Mote<T>()
+  mote2.addParent(mote1)
+  mote1.addChild(mote2)
+  const fun = function(v){
+    const res = fn(v)
+    if(res){
+      this.push(v)
+    }
+  }
+  mote2.addFn(fun)
+  return mote2
+} 
 
 
 
