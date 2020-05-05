@@ -112,6 +112,21 @@ export function take<T>(source: Mote<T>, n: number): Mote<T>{
   return mote
 }
 
+export function combine<T>(sources: Mote<any>[], fn): Mote<T>{
+  const mote = new Mote<T>()
+  sources.forEach(s => {
+    mote.addParent(s)
+    s.addChild(mote)
+  })
+  const fun = function(source){
+    const newValue = fn.apply(this, this.parents.map(p => p.currentValue))
+    this.push(newValue)
+  }
+  mote.addFn(fun)
+  return mote
+}
+
+
 
 
 
