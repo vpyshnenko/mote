@@ -35,12 +35,12 @@ export class Mote <T>{
   }
   push(val: T){
     this.setNewValue(val)
-    this.children.forEach(m => m.eval())
+    this.children.forEach(m => m.eval(this))
   }
-  eval(){
+  eval(source){
     const args = this.parents.map(p => p.currentValue)
     if(this.fn){
-      this.fn.apply(this, args)
+      this.fn.call(this, source)
     }
 }
 }
@@ -49,8 +49,8 @@ export function map<T,R>(source: Mote<T>, fn: (x: T) => R ): Mote<R> {
   const mote = new Mote<R>()
   mote.addParent(source)
   source.addChild(mote)
-  const fun = function(v){
-    const newVal = fn(v)
+  const fun = function(){
+    const newVal = fn(source.currentValue)
     this.push(newVal)
   }
   mote.addFn(fun)
@@ -61,10 +61,11 @@ export function filter<T>(source: Mote<T>, fn: (x: T) => boolean ): Mote<T> {
   const mote = new Mote<T>()
   mote.addParent(source)
   source.addChild(mote)
-  const fun = function(v){
-    const res = fn(v)
+  const fun = function(){
+    const newValue = source.currentValue
+    const res = fn(newValue)
     if(res){
-      this.push(v)
+      this.push(newValue)
     }
   }
   mote.addFn(fun)
@@ -75,12 +76,25 @@ export function reduce<T,R>(source: Mote<T>, fn: (acc: R, v:T) => R, initial: R)
   const mote = new Mote<R>()
   mote.addParent(source)
   source.addChild(mote)
-  const fun = function(v){
-    const acc = fn(this.currentValue, v)
+  const fun = function(){
+    const acc = fn(this.currentValue, source.currentValue)
     this.push(acc)
   }
   mote.addFn(fun)
   mote.push(initial)
+  return mote
+}
+
+export function merge<T>(sources: Mote<any>[]): Mote<T>{
+  const mote = new Mote<T>()
+  sources.forEach(s => {
+    mote.addParent(s)
+    s.addChild(mote)
+  })
+  const fun = function(source){
+    this.push(source.currentValue)
+  }
+  mote.addFn(fun)
   return mote
 }
 
