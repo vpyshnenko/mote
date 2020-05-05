@@ -1,4 +1,4 @@
-import {Mote,  map, filter, reduce, merge} from './mote'
+import {Mote,  map, filter, reduce, merge, take} from './mote'
 
 const m1 = new Mote<number>()
 const m2 = map<number, number>(m1, x => 2*x)
@@ -21,3 +21,11 @@ m7.push(1)
 m8.push(2)
 m7.push(3)
 m1.push(7)
+
+const m10 = new Mote<number>()
+const m11 = take(m10, 3)
+m10.push(101);
+m10.push(102);
+m10.push(103);
+m10.push(104);
+m10.push(105);

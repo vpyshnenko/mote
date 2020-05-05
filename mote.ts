@@ -42,7 +42,7 @@ export class Mote <T>{
     if(this.fn){
       this.fn.call(this, source)
     }
-}
+  }
 }
 
 export function map<T,R>(source: Mote<T>, fn: (x: T) => R ): Mote<R> {
@@ -97,6 +97,21 @@ export function merge<T>(sources: Mote<any>[]): Mote<T>{
   mote.addFn(fun)
   return mote
 }
+
+export function take<T>(source: Mote<T>, n: number): Mote<T>{
+  const mote = new Mote<T>()
+  mote.addParent(source)
+  source.addChild(mote)
+  let i = 0
+  const fun = function(){
+    if(i++ < n) {
+      this.push(source.currentValue)
+    }
+  }
+  mote.addFn(fun)
+  return mote
+}
+
 
 
 
