@@ -5,6 +5,7 @@ export class Mote <T>{
   children: Mote<any>[];
   parents: Mote<any>[];
   fn: any;
+  enabled: boolean;
   logEnabled: boolean;
   constructor(){
     this.name = `m${++Mote.count}`
@@ -12,7 +13,11 @@ export class Mote <T>{
     this.parents = []
     this.children = []
     this.logEnabled = true
+    this.enabled = true
 
+  }
+  enable(val: boolean){
+    this.enabled = val
   }
   addParent<R>(n: Mote<R>){
     this.parents.push(n)
@@ -34,13 +39,17 @@ export class Mote <T>{
     }
   }
   push(val: T){
-    this.setNewValue(val)
-    this.children.forEach(m => m.eval(this))
+    if(this.enabled){
+      this.setNewValue(val)
+      this.children.forEach(m => m.eval(this))
+    }
   }
   eval(source){
-    const args = this.parents.map(p => p.currentValue)
-    if(this.fn){
-      this.fn.call(this, source)
+    if(this.enabled){
+      const args = this.parents.map(p => p.currentValue)
+      if(this.fn){
+        this.fn.call(this, source)
+      }
     }
   }
 }
@@ -131,7 +140,7 @@ export function interval(period: number, n: number=Number.MAX_SAFE_INTEGER): Mot
   let i = 0
   let id
   const fun = () => {
-    if(++i < n){
+    if(++i <= n){
       mote.push(i)
     } else {
       clearInterval(id)
@@ -155,6 +164,26 @@ export function delay<T>(source: Mote<T>, time: number): Mote<T>{
   mote.addFn(fun)
   return mote
 }
+
+export function throttleTime<T>(source: Mote<T>, time: number): Mote<T>{
+  const mote = new Mote<T>()
+  mote.addParent(source)
+  source.addChild(mote)
+  const fun = () => {
+    if(mote.enabled){
+      const newValue = source.currentValue
+      mote.push(newValue)
+      mote.enable(false)
+      setTimeout(() => {
+        mote.enable(true)
+      }, time)
+
+    }
+  }
+  mote.addFn(fun)
+  return mote
+}
+
 
 
 
