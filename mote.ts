@@ -142,6 +142,20 @@ export function interval(period: number, n: number=Number.MAX_SAFE_INTEGER): Mot
   return mote
 }
 
+export function delay<T>(source: Mote<T>, time: number): Mote<T>{
+  const mote = new Mote<T>()
+  mote.addParent(source)
+  source.addChild(mote)
+  const fun = () => {
+    const newValue = source.currentValue
+    setTimeout(() => {
+     mote.push(newValue)
+    }, time)
+  }
+  mote.addFn(fun)
+  return mote
+}
+
 
 
 
