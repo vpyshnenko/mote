@@ -1,4 +1,4 @@
-import {Mote,  map, filter, reduce, merge, take, combine} from './mote'
+import {Mote,  map, filter, reduce, merge, take, combine, interval} from './mote'
 
 const m1 = new Mote<number>()
 const m2 = map<number, number>(m1, x => 2*x)
@@ -40,3 +40,6 @@ m13.push(4)
 
 const m14 = combine([m12, m13], (a, b) => a + b)
 m12.push(4)
+const m15 = interval(1000, 5)
+const m16 = reduce(m15, (acc, v) => acc + v, 0)
+

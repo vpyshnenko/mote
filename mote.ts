@@ -126,6 +126,22 @@ export function combine<T>(sources: Mote<any>[], fn): Mote<T>{
   return mote
 }
 
+export function interval(period: number, n: number=Number.MAX_SAFE_INTEGER): Mote<number>{
+  const mote = new Mote<number>()
+  let i = 0
+  let id
+  const fun = () => {
+    if(++i < n){
+      mote.push(i)
+    } else {
+      clearInterval(id)
+    }
+  }
+  mote.addFn(fun)
+  id = setInterval(fun, period)
+  return mote
+}
+
 
 
 
